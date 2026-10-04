@@ -1,0 +1,23 @@
+services:
+  pottery:
+    build: .
+    image: pottery-assembly:latest
+    container_name: pottery-assembly
+    ports:
+      - "8000:8000"
+    environment:
+      # SQLite 数据库文件位置（容器内路径，挂载到命名卷持久化）
+      POTTERY_DB: /data/pottery.db
+      # 采纳阈值（毫米），当前在代码中固定为 1 mm，可通过修改
+      # app/store.py 的 JOIN_TOL_MM 调整
+    volumes:
+      - pottery-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/config')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pottery-data:

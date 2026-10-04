@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陶片拼接工作台</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>陶片拼接工作台</h1>
+  <div class="meta">
+    <span>单位：毫米（mm）</span>
+    <span>拼接误差上限：<b id="joinTol">1</b> mm</span>
+    <span>全局状态版本：<b id="stateVer">-</b></span>
+    <button id="refreshBtn" class="small">刷新状态</button>
+  </div>
+</header>
+
+<main>
+  <aside class="panel">
+    <nav class="tabs">
+      <button data-tab="add" class="active">录入陶片</button>
+      <button data-tab="candidate">候选拼接</button>
+      <button data-tab="relations">关系列表</button>
+    </nav>
+
+    <!-- 录入 -->
+    <section id="tab-add" class="tab">
+      <h2>录入陶片</h2>
+      <p class="hint">在左侧编辑器中依次单击添加轮廓顶点（≥3，自动闭合）；
+        切换到“标记”模式后点击边缘（自动吸附最近边）添加对应标记。
+        也可直接在文本框中粘贴坐标。</p>
+      <label>名称 <input id="fragName" type="text" placeholder="如：陶片D"></label>
+      <div class="btnrow">
+        <button id="modeContour" class="active">轮廓模式</button>
+        <button id="modeMarker">标记模式</button>
+        <button id="undoPoint" class="subtle">撤销最后一点</button>
+        <button id="clearEditor" class="subtle">清空</button>
+      </div>
+      <label>轮廓坐标（每行 <code>x, y</code>，毫米）
+        <textarea id="contourText" rows="5" placeholder="0, 0&#10;60, 0&#10;60, 25"></textarea>
+      </label>
+      <div class="markeredit">
+        <span>标记：</span><input id="markerLabel" type="text" placeholder="标记名（标记模式下使用）" size="14">
+      </div>
+      <p id="editorMsg" class="msg"></p>
+      <button id="submitFrag" class="primary">提交陶片</button>
+    </section>
+
+    <!-- 候选 -->
+    <section id="tab-candidate" class="tab" hidden>
+      <h2>创建候选拼接</h2>
+      <p class="hint">每片至少选取两处对应的边缘标记，顺序必须一一对应。</p>
+      <label>陶片 A（固定组）
+        <select id="selA"></select>
+      </label>
+      <label>陶片 B（整体移动组）
+        <select id="selB"></select>
+      </label>
+      <div class="pairlist">
+        <div>
+          <h3>A 的标记（按顺序点击）</h3>
+          <select id="pairA" multiple size="6"></select>
+          <div id="pairAHint" class="hint pickhint"></div>
+        </div>
+        <div class="arrow">⇄</div>
+        <div>
+          <h3>B 的标记（按顺序点击）</h3>
+          <select id="pairB" multiple size="6"></select>
+          <div id="pairBHint" class="hint pickhint"></div>
+        </div>
+      </div>
+      <p class="hint">在两侧<b>按对应顺序依次点击</b>标记（第 1 个点击的 A 标记
+        对应第 1 个点击的 B 标记，依此类推），每侧至少两个；再次点击可取消。</p>
+      <button id="submitCandidate" class="primary">生成候选并预览</button>
+    </section>
+
+    <!-- 关系 -->
+    <section id="tab-relations" class="tab" hidden>
+      <h2>拼接关系</h2>
+      <div id="relationList"></div>
+    </section>
+  </aside>
+
+  <section class="views">
+    <div class="canvaswrap">
+      <h2>编辑器（局部坐标） <span class="sub">提交前录入轮廓/标记</span></h2>
+      <canvas id="editorCanvas" width="520" height="420"></canvas>
+    </div>
+    <div class="canvaswrap">
+      <h2>世界视图（拼接总览）
+        <span class="sub">滚轮缩放 · 拖拽平移 · 虚线为候选预览</span>
+      </h2>
+      <canvas id="worldCanvas" width="760" height="640"></canvas>
+    </div>
+    <div class="previewwrap" id="previewPanel" hidden>
+      <h2>拼接预览 <span id="previewTitle" class="sub"></span></h2>
+      <div id="previewBody"></div>
+      <div class="btnrow">
+        <button id="adoptBtn" class="primary">采纳拼接</button>
+        <button id="closePreview" class="subtle">关闭预览</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>
